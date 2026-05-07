@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ale — Personal Development</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f0e;
+    --bg2: #161714;
+    --bg3: #1e1f1c;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0ede6;
+    --text2: #9a9890;
+    --text3: #5a5956;
+    --green: #4ade80;
+    --green-dim: rgba(74,222,128,0.12);
+    --green-mid: rgba(74,222,128,0.25);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.1);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.1);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; }
+  body { min-height: 100vh; max-width: 680px; margin: 0 auto; padding: 0 0 80px; }
+
+  /* Header */
+  .header { padding: 28px 20px 0; }
+  .header-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+  .header-name { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--text); letter-spacing: -0.3px; }
+  .header-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); letter-spacing: 0.05em; text-transform: uppercase; }
+  .header-sub { font-size: 13px; color: var(--text3); margin-bottom: 24px; }
+
+  /* Nav */
+  .nav { display: flex; gap: 4px; padding: 0 20px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .nav-btn { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 10px 14px; background: transparent; border: none; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.15s, border-color 0.15s; }
+  .nav-btn.active { color: var(--green); border-bottom-color: var(--green); }
+  .nav-btn:hover:not(.active) { color: var(--text2); }
+
+  /* Panels */
+  .panel { display: none; padding: 0 20px; }
+  .panel.active { display: block; }
+
+  /* Section labels */
+  .slabel { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin: 24px 0 12px; }
+  .slabel:first-child { margin-top: 0; }
+
+  /* Week header */
+  .week-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .week-title { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--text); }
+  .week-arrows { display: flex; gap: 6px; }
+  .arrow-btn { width: 32px; height: 32px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s; }
+  .arrow-btn:hover { border-color: var(--border2); color: var(--text); }
+  .arrow-btn:disabled { opacity: 0.25; cursor: default; }
+
+  /* Score card */
+  .score-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
+  .score-num { font-family: 'DM Serif Display', serif; font-size: 44px; line-height: 1; min-width: 70px; }
+  .score-right { flex: 1; }
+  .score-label { font-size: 12px; color: var(--text2); margin-bottom: 8px; }
+  .score-bar-bg { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+
+  /* Focus box */
+  .focus-card { background: var(--green-dim); border: 1px solid rgba(74,222,128,0.15); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 20px; }
+  .focus-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
+  .focus-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; font-size: 13px; color: var(--text); line-height: 1.5; }
+  .focus-item:last-child { margin-bottom: 0; }
+  .focus-dot { width: 5px; height: 5px; min-width: 5px; border-radius: 50%; background: var(--green); margin-top: 6px; }
+
+  /* Habit grid */
+  .habit-table { width: 100%; border-collapse: collapse; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .habit-table th { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); padding: 10px 14px; border-bottom: 1px solid var(--border); font-weight: 400; text-align: left; background: var(--bg3); }
+  .habit-table th.days-head { text-align: center; padding: 10px 8px; }
+  .habit-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .habit-table tr:last-child td { border-bottom: none; }
+  .habit-name { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .freq-tag { font-family: 'DM Mono', monospace; font-size: 9px; padding: 2px 6px; border-radius: 4px; background: var(--bg3); color: var(--text3); border: 1px solid var(--border); white-space: nowrap; }
+  .days-cell { padding: 8px; }
+  .days-row { display: flex; gap: 4px; justify-content: center; }
+  .day-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border2); background: transparent; color: var(--text3); font-family: 'DM Mono', monospace; font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+  .day-btn:hover { border-color: var(--green); color: var(--green); }
+  .day-btn.on { background: var(--green); border-color: var(--green); color: #0e0f0e; font-weight: 500; }
+  .day-btn.today { border-color: var(--text3); }
+  .month-btn { width: 100%; height: 28px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: transparent; color: var(--text3); font-family: 'DM Mono', monospace; font-size: 9px; cursor: pointer; transition: all 0.15s; }
+  .month-btn:hover { border-color: var(--green); color: var(--green); }
+  .month-btn.on { background: var(--green); border-color: var(--green); color: #0e0f0e; font-weight: 500; }
+
+  /* Goal cards */
+  .goal-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; display: flex; gap: 12px; cursor: pointer; transition: border-color 0.15s; }
+  .goal-card:hover { border-color: var(--border2); }
+  .goal-card.done { opacity: 0.38; }
+  .goal-card.t1 { border-left: 2px solid var(--green); }
+  .goal-card.t2 { border-left: 2px solid var(--amber); }
+  .goal-card.t3 { border-left: 2px solid var(--border2); }
+  .chk { width: 18px; height: 18px; min-width: 18px; border-radius: 5px; border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; margin-top: 2px; transition: all 0.15s; }
+  .chk.on { background: var(--green); border-color: var(--green); }
+  .chk svg { display: none; }
+  .chk.on svg { display: block; }
+  .gbody { flex: 1; }
+  .gtags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 5px; }
+  .tag { font-family: 'DM Mono', monospace; font-size: 9px; padding: 2px 7px; border-radius: 4px; font-weight: 400; white-space: nowrap; border: 1px solid; }
+  .tag-now { background: rgba(74,222,128,0.08); color: #4ade80; border-color: rgba(74,222,128,0.2); }
+  .tag-mid { background: rgba(251,191,36,0.08); color: #fbbf24; border-color: rgba(251,191,36,0.2); }
+  .tag-long { background: rgba(167,139,250,0.08); color: #a78bfa; border-color: rgba(167,139,250,0.2); }
+  .tag-habit { background: rgba(96,165,250,0.08); color: #60a5fa; border-color: rgba(96,165,250,0.2); }
+  .tag-t1 { background: rgba(74,222,128,0.08); color: #4ade80; border-color: rgba(74,222,128,0.2); }
+  .tag-t2 { background: rgba(251,191,36,0.08); color: #fbbf24; border-color: rgba(251,191,36,0.2); }
+  .tag-t3 { background: rgba(255,255,255,0.04); color: var(--text3); border-color: var(--border); }
+  .gtitle { font-size: 14px; color: var(--text); font-weight: 500; line-height: 1.4; margin-bottom: 3px; }
+  .gmeta { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .ask-btn { margin-top: 7px; font-family: 'DM Mono', monospace; font-size: 10px; padding: 3px 9px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: transparent; color: var(--text3); cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em; }
+  .ask-btn:hover { border-color: var(--green); color: var(--green); }
+
+  /* Progress bars */
+  .prog-wrap { margin-bottom: 12px; }
+  .prog-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+  .prog-pct { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); }
+  .prog-bg { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.4s; }
+
+  /* Stats grid */
+  .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .stat-val { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--text); }
+  .stat-val.green { color: var(--green); }
+  .stat-lbl { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  /* Legend */
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+  .li { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text3); }
+  .lb { width: 3px; height: 13px; border-radius: 2px; }
+
+  @media (max-width: 480px) {
+    .header { padding: 20px 16px 0; }
+    .nav { padding: 0 16px; }
+    .panel { padding: 0 16px; }
+    .day-btn { width: 24px; height: 24px; font-size: 8px; }
+    .days-row { gap: 3px; }
+    .score-num { font-size: 36px; min-width: 56px; }
+    .stats-grid { grid-template-columns: repeat(2,1fr); }
+    .habit-table td, .habit-table th { padding: 9px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="header-name">Ale's Dashboard</div>
+    <div class="header-date" id="hdate"></div>
+  </div>
+  <div class="header-sub">Personal development — 18-month plan</div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="sw('week')">This week</button>
+  <button class="nav-btn" onclick="sw('goals')">Goals</button>
+  <button class="nav-btn" onclick="sw('progress')">Progress</button>
+</nav>
+
+<div class="panel active" data-tab="week" id="panel-week"></div>
+<div class="panel" data-tab="goals" id="panel-goals"></div>
+<div class="panel" data-tab="progress" id="panel-progress"></div>
+
+<script>
+const DAYS_SHORT = ['M','T','W','T','F','S','S'];
+const DAYS_FULL = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+const HABITS = [
+  { id:'gym',     name:'Strength training',       freq:3, badge:'3× / week' },
+  { id:'faith',   name:'Stay connected to God',   freq:1, badge:'Weekly' },
+  { id:'date',    name:'Date with girlfriend',    freq:1, badge:'Weekly' },
+  { id:'sport',   name:'Fun sport / activity',    freq:1, badge:'Biweekly', biweekly:true },
+  { id:'dutch',   name:'Dutch practice',          freq:3, badge:'3× / week' },
+  { id:'port',    name:'Brazilian Portuguese',    freq:5, badge:'5× / week' },
+  { id:'friends', name:'Friend group check-in',   freq:1, badge:'Weekly' },
+  { id:'voo',     name:'VOO investment (IBKR)',   freq:0, badge:'Quarterly' },
+];
+
+const GOALS = [
+  { id:'c1', track:'career', horizon:'now', tier:1, title:'Complete FMVA certification', meta:'Finish CFI modules — signals finance seriousness to private sector employers beyond a regulatory CV', prompt:'Create a 4-week FMVA study plan for someone working full time at a central bank' },
+  { id:'c2', track:'career', horizon:'now', tier:1, title:'Rebuild LinkedIn as a finance and strategy professional', meta:'Lead with analytical skills and advisory ambition — not supervision. Target Dutch Caribbean, US Sun Belt, Madrid', prompt:'Rewrite my LinkedIn headline and about section to position me as a finance and strategy professional, moving away from a central bank regulator identity, targeting roles in Miami, Houston, Austin, and Madrid' },
+  { id:'c3', track:'career', horizon:'mid', tier:1, title:'Build a portfolio of 3 financial work samples', meta:'Guardian Holdings DDM done — add an LBO and a sector analysis. Make them shareable and publicly visible', prompt:'What financial models most impress strategy and transactions teams at Big 4 firms and boutique advisory shops?' },
+  { id:'c4', track:'career', horizon:'mid', tier:1, title:'Use CBA for internationally credible exposure', meta:'IMF Article IV, BIS/IAIS working groups, financial stability reports — this work travels on a CV', prompt:'What specific projects inside a Caribbean central bank carry the most credibility with international private sector employers in finance?' },
+  { id:'c5', track:'career', horizon:'mid', tier:1, title:'Build a visible body of work', meta:'1 piece per month — LinkedIn post, model breakdown, or industry take. Gets you called instead of having to apply', prompt:'Give me a content strategy for a finance professional in their mid-twenties trying to build credibility on LinkedIn — what to post, how often, and what topics' },
+  { id:'c6', track:'career', horizon:'mid', tier:1, title:'Build a 10-person network in target markets', meta:'Miami, Houston, Austin, Madrid, Amsterdam — finance and strategy. Quality over quantity', prompt:'Give me a targeted outreach strategy to build a finance and strategy network in Miami, Houston, Austin, and Madrid from Aruba' },
+  { id:'c7', track:'career', horizon:'long', tier:1, title:'Land a high-impact private sector role', meta:'Strategy, transactions, corporate finance, or advisory — in a target city or the Dutch Caribbean', prompt:'What is the realistic path from Caribbean central bank prudential examiner to a strategy or transactions role at a Big 4 or boutique advisory firm?' },
+  { id:'f1', track:'finance', horizon:'now', tier:1, title:'Set your quarterly VOO investment amount', meta:'Wire fees make quarterly smarter than monthly — decide the number and commit to it', prompt:'Help me decide on a quarterly VOO investment amount as a 25-year-old in Aruba prioritizing liquidity, with a property purchase in ~2 years' },
+  { id:'f2', track:'finance', horizon:'now', tier:1, title:'Define your liquidity boundary', meta:'How much stays in cash at all times vs gets invested — write the rule so it runs on autopilot', prompt:'How should I think about the split between liquid savings and invested assets as a 25-year-old with a property purchase in 2 years and potential relocation?' },
+  { id:'f3', track:'finance', horizon:'mid', tier:1, title:'Structure a property savings plan', meta:'Target down payment, monthly savings rate, where to park it — separate from IBKR', prompt:'Help me build a property savings plan for Aruba — target down payment, monthly savings needed, and best place to keep it liquid' },
+  { id:'f4', track:'finance', horizon:'mid', tier:1, title:'Map relocation financial readiness', meta:'What does savings need to look like to take a risk on Miami, Houston, or Madrid? Cost-of-living mapped', prompt:'Compare cost of living in Miami, Houston, Austin, and Madrid for a young finance professional relocating from Aruba — what salary floor is needed?' },
+  { id:'f5', track:'finance', horizon:'long', tier:1, title:'Research US work authorization options', meta:'O-1, H-1B, and Dutch Kingdom passport options — know this before an opportunity arrives', prompt:'What are the realistic US work visa options for a 25-year-old Dutch Kingdom citizen with an MBA and finance experience targeting Miami or Houston?' },
+  { id:'s1', track:'skills', horizon:'now', tier:2, title:'Build an LBO model', meta:'Next model after the DDM — pick a real company and build from scratch', prompt:'Walk me through how to build a leveraged buyout model as a self-teaching exercise with a real company example' },
+  { id:'s2', track:'skills', horizon:'mid', tier:2, title:'Learn SQL through a real project', meta:'One finished project using CBA data or a public dataset beats any course', prompt:'What is the fastest practical path to useful SQL for a finance professional, and what project should I build first?' },
+  { id:'s3', track:'skills', horizon:'mid', tier:2, title:'Validate one side business idea', meta:'Talk to 20 people, observe 3 pain points, write a one-pager on the most promising — no building yet', prompt:'Give me a structured framework for identifying and lightly validating a side business idea with a finance background in Aruba' },
+  { id:'p1', track:'personal', horizon:'mid', tier:3, title:'Trip to Brazil', meta:'Plan and book within 3 months — timing, cities, budget. Doubles as Portuguese immersion', prompt:'Help me plan a 10-day trip to Brazil for someone based in Aruba — best time to go, cities, and rough budget' },
+  { id:'p2', track:'personal', horizon:'mid', tier:3, title:'Trip to Europe', meta:'Netherlands as anchor — combine with Madrid or southern Europe. Doubles as relocation scouting', prompt:'Help me plan a 2-week Europe trip anchored in the Netherlands, combined with Madrid or another southern European city' },
+  { id:'p3', track:'personal', horizon:'long', tier:3, title:'Finish the picnic table woodworking build', meta:'First project — source lumber from Kooyman or Divi Divi', prompt:'Give me a beginner woodworking cut list and step-by-step assembly plan for a standard picnic table' },
+];
+
+const TRACK_NAMES = { career:'Career', finance:'Finance & relocation', skills:'Skills & side business', personal:'Personal' };
+const HL = { now:'Now · 0–3 mo', mid:'Mid · 3–9 mo', long:'Long · 9–18 mo', habit:'Habit' };
+const TL = { 1:'Tier 1', 2:'Tier 2', 3:'Tier 3' };
+const HC = { now:'tag-now', mid:'tag-mid', long:'tag-long', habit:'tag-habit' };
+const TC = { 1:'tag-t1', 2:'tag-t2', 3:'tag-t3' };
+const GC = { 1:'t1', 2:'t2', 3:'t3' };
+
+// State
+let ST = { goals:{}, habits:{}, weekOffset:0 };
+GOALS.forEach(g => ST.goals[g.id] = false);
+try { const s = localStorage.getItem('ale_pdp_v1'); if(s){ const p=JSON.parse(s); ST={...ST,...p}; } } catch(e){}
+function save(){ try{ localStorage.setItem('ale_pdp_v1', JSON.stringify(ST)); }catch(e){} }
+
+// Week helpers
+function getMondayOf(offset){
+  const d = new Date();
+  const day = d.getDay(); // 0=Sun
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff + offset*7);
+  d.setHours(0,0,0,0);
+  return d;
+}
+function weekKey(offset){ return getMondayOf(offset).toISOString().slice(0,10); }
+function weekLabel(offset){
+  if(offset===0) return 'This week';
+  if(offset===-1) return 'Last week';
+  const m = getMondayOf(offset);
+  const s = getMondayOf(offset); s.setDate(s.getDate()+6);
+  return m.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+s.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function todayDayIdx(){
+  const d = new Date().getDay();
+  return d === 0 ? 6 : d - 1;
+}
+function habitDayKey(hid, dayIdx){ return `h_${weekKey(ST.weekOffset)}_${hid}_${dayIdx}`; }
+function habitOn(hid, dayIdx){ return !!ST.habits[habitDayKey(hid,dayIdx)]; }
+function toggleHabit(hid, dayIdx){ const k=habitDayKey(hid,dayIdx); ST.habits[k]=!ST.habits[k]; save(); renderWeek(); }
+
+function quarterKey(hid){ const d=new Date(); return `q_${d.getFullYear()}_${Math.floor(d.getMonth()/3)}_${hid}`; }
+function quarterOn(hid){ return !!ST.habits[quarterKey(hid)]; }
+function toggleQuarter(hid){ const k=quarterKey(hid); ST.habits[k]=!ST.habits[k]; save(); renderWeek(); }
+
+function weekScore(){
+  let possible=0, done=0;
+  HABITS.forEach(h=>{
+    if(h.freq===0) return;
+    const target = h.biweekly ? 1 : h.freq;
+    possible += target;
+    for(let i=0;i<7;i++) if(habitOn(h.id,i)) done++;
+  });
+  return {done, possible};
+}
+
+function sw(t){
+  const tabs=['week','goals','progress'];
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',tabs[i]===t));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.dataset.tab===t));
+}
+
+function toggleGoal(id){ ST.goals[id]=!ST.goals[id]; save(); renderAll(); }
+
+function pct(goals){ return goals.length?Math.round(goals.filter(g=>ST.goals[g.id]).length/goals.length*100):0; }
+
+function scoreColor(p){ return p>=80?'var(--green)':p>=50?'var(--amber)':'var(--red)'; }
+
+// Render week
+function renderWeek(){
+  const score=weekScore();
+  const sp=score.possible>0?Math.round(score.done/score.possible*100):0;
+  const sc=scoreColor(sp);
+  const todayIdx = ST.weekOffset===0 ? todayDayIdx() : -1;
+
+  const focusGoals = GOALS.filter(g=>g.tier===1&&!ST.goals[g.id]).slice(0,3);
+
+  let rows = '';
+  HABITS.forEach(h=>{
+    let daysCell = '';
+    if(h.freq===0){
+      const on=quarterOn(h.id);
+      daysCell=`<td class="days-cell"><button class="month-btn${on?' on':''}" onclick="toggleQuarter('${h.id}')">${on?'✓ done':'mark done'}</button></td>`;
+    } else {
+      const dots = DAYS_SHORT.map((d,i)=>{
+        const on=habitOn(h.id,i);
+        const today=i===todayIdx?' today':'';
+        return `<button class="day-btn${on?' on':''}${today}" onclick="toggleHabit('${h.id}',${i})" title="${DAYS_FULL[i]}">${d}</button>`;
+      }).join('');
+      daysCell=`<td class="days-cell"><div class="days-row">${dots}</div></td>`;
+    }
+    rows+=`<tr>
+      <td><div class="habit-name">${h.name}<span class="freq-tag">${h.badge}</span></div></td>
+      ${daysCell}
+    </tr>`;
+  });
+
+  document.getElementById('panel-week').innerHTML=`
+    <div class="week-nav">
+      <div class="week-title">${weekLabel(ST.weekOffset)}</div>
+      <div class="week-arrows">
+        <button class="arrow-btn" onclick="ST.weekOffset--;save();renderWeek()">‹</button>
+        <button class="arrow-btn" onclick="if(ST.weekOffset<0){ST.weekOffset++;save();renderWeek()}" ${ST.weekOffset>=0?'disabled':''}>›</button>
+      </div>
+    </div>
+
+    <div class="score-card">
+      <div class="score-num" style="color:${sc}">${sp}%</div>
+      <div class="score-right">
+        <div class="score-label">${score.done} of ${score.possible} habit check-ins · week score</div>
+        <div class="score-bar-bg"><div class="score-bar-fill" style="width:${sp}%;background:${sc}"></div></div>
+      </div>
+    </div>
+
+    <div class="focus-card">
+      <div class="focus-label">Tier 1 focus</div>
+      ${focusGoals.length
+        ? focusGoals.map(g=>`<div class="focus-item"><div class="focus-dot"></div><span>${g.title}</span></div>`).join('')
+        : '<div style="font-size:13px;color:var(--green);font-weight:500">All Tier 1 goals complete.</div>'}
+    </div>
+
+    <div class="slabel">Habits</div>
+    <table class="habit-table">
+      <thead><tr>
+        <th>Habit</th>
+        <th class="days-head">M &nbsp; T &nbsp; W &nbsp; T &nbsp; F &nbsp; S &nbsp; S</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// Render goals
+function renderGoals(){
+  const tracks=['career','finance','skills','personal'];
+  let html=`<div class="legend">
+    <div class="li"><div class="lb" style="background:var(--green)"></div>Tier 1 — year-defining</div>
+    <div class="li"><div class="lb" style="background:var(--amber)"></div>Tier 2 — active</div>
+    <div class="li"><div class="lb" style="background:var(--border2)"></div>Tier 3 — protected</div>
+  </div>`;
+  tracks.forEach(t=>{
+    const tg=GOALS.filter(g=>g.track===t);
+    if(!tg.length) return;
+    const d=tg.filter(g=>ST.goals[g.id]).length, p=pct(tg);
+    html+=`<div class="slabel">${TRACK_NAMES[t]}</div>
+      <div class="prog-wrap">
+        <div class="prog-header"><span>${d}/${tg.length} complete</span><span class="prog-pct">${p}%</span></div>
+        <div class="prog-bg"><div class="prog-fill" style="width:${p}%"></div></div>
+      </div>`;
+    tg.forEach(g=>{
+      const chk=ST.goals[g.id];
+      html+=`<div class="goal-card${chk?' done':''} ${GC[g.tier]}" onclick="toggleGoal('${g.id}')">
+        <div class="chk${chk?' on':''}">
+          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#0e0f0e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="gbody">
+          <div class="gtags">
+            <span class="tag ${HC[g.horizon]}">${HL[g.horizon]}</span>
+            <span class="tag ${TC[g.tier]}">${TL[g.tier]}</span>
+          </div>
+          <div class="gtitle">${g.title}</div>
+          <div class="gmeta">${g.meta}</div>
+          ${g.prompt?`<button class="ask-btn" onclick="event.stopPropagation();window.open('https://claude.ai','_blank')">Ask Claude ↗</button>`:''}
+        </div>
+      </div>`;
+    });
+  });
+  document.getElementById('panel-goals').innerHTML=html;
+}
+
+// Render progress
+function renderProgress(){
+  const total=GOALS.length, done=GOALS.filter(g=>ST.goals[g.id]).length;
+  const t1=GOALS.filter(g=>g.tier===1), t1d=t1.filter(g=>ST.goals[g.id]).length;
+  const sp=Math.round(done/total*100);
+
+  // Habit consistency across all recorded weeks
+  const habitStats={};
+  HABITS.filter(h=>h.freq>0).forEach(h=>{ habitStats[h.id]={total:0,done:0}; });
+  Object.keys(ST.habits).forEach(k=>{
+    const m=k.match(/^h_[\d-]+_(\w+)_(\d)$/);
+    if(m && habitStats[m[1]]){ habitStats[m[1]].total++; if(ST.habits[k]) habitStats[m[1]].done++; }
+  });
+
+  let html=`
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val">${done}/${total}</div><div class="stat-lbl">Goals complete</div></div>
+      <div class="stat-card"><div class="stat-val">${t1d}/${t1.length}</div><div class="stat-lbl">Tier 1 done</div></div>
+      <div class="stat-card"><div class="stat-val green">${sp}%</div><div class="stat-lbl">Overall progress</div></div>
+      <div class="stat-card"><div class="stat-val">${total-done}</div><div class="stat-lbl">Remaining</div></div>
+    </div>
+
+    <div class="slabel">Goals by track</div>`;
+
+  ['career','finance','skills','personal'].forEach(t=>{
+    const tg=GOALS.filter(g=>g.track===t);
+    if(!tg.length) return;
+    const d=tg.filter(g=>ST.goals[g.id]).length, p=pct(tg);
+    html+=`<div class="prog-wrap">
+      <div class="prog-header"><span>${TRACK_NAMES[t]}</span><span class="prog-pct">${d}/${tg.length} · ${p}%</span></div>
+      <div class="prog-bg"><div class="prog-fill" style="width:${p}%"></div></div>
+    </div>`;
+  });
+
+  html+=`<div class="slabel">Habit consistency (all time)</div>`;
+  HABITS.filter(h=>h.freq>0).forEach(h=>{
+    const s=habitStats[h.id]||{total:0,done:0};
+    const p=s.total>0?Math.round(s.done/s.total*100):0;
+    html+=`<div class="prog-wrap">
+      <div class="prog-header"><span>${h.name}</span><span class="prog-pct">${s.done}/${s.total} · ${p}%</span></div>
+      <div class="prog-bg"><div class="prog-fill" style="width:${p}%"></div></div>
+    </div>`;
+  });
+
+  document.getElementById('panel-progress').innerHTML=html;
+}
+
+function renderAll(){ renderWeek(); renderGoals(); renderProgress(); }
+
+// Date header
+const now = new Date();
+document.getElementById('hdate').textContent = now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}).toUpperCase();
+
+renderAll();
+</script>
+</body>
+</html>
